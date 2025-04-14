@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Poster Generator</title>
+    <style>
+        /* --- Basic Reset and Global Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- Layout Container --- */
+        .container {
+            max-width: 500px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Text Input Area --- */
+        #text-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            resize: vertical;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        #text-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+        }
+
+        /* --- General Button Styling --- */
+        button {
+            font-family: inherit;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            margin-bottom: 25px;
+        }
+
+        /* --- Primary Action Button ('Change Background') --- */
+        #change-bg-button {
+            background-color: #007aff;
+            color: white;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        #change-bg-button:hover {
+            background-color: #005ecf;
+        }
+
+        #change-bg-button:active {
+            opacity: 0.8;
+        }
+
+        /* --- Segmented Control Styling ('Tone Selector') --- */
+        .segmented-control {
+            display: flex;
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .segmented-control button {
+            flex: 1;
+            padding: 10px 5px;
+            border-radius: 0;
+            margin-bottom: 0;
+            background-color: #ffffff;
+            color: #007aff;
+            border-left: 1px solid #e0e0e0;
+            font-size: 14px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .segmented-control button:first-child {
+            border-left: none;
+        }
+
+        .segmented-control button.active {
+            background-color: #007aff;
+            color: white;
+            font-weight: 500;
+        }
+
+        .segmented-control button:not(.active):hover {
+            background-color: #f5f5f5;
+        }
+
+        /* --- Canvas Preview Area --- */
+        #poster-canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background-color: #f0f0f0;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+
+        /* --- Download Button Styling --- */
+        #download-button {
+            background-color: #e5e5ea;
+            color: #007aff;
+            font-weight: 500;
+            width: auto;
+            padding: 10px 25px;
+        }
+
+        #download-button:hover {
+            background-color: #dcdce0;
+        }
+
+        #download-button:active {
+            opacity: 0.8;
+        }
+
+        /* --- Font Selector Styling --- */
+        .font-selector {
+            width: 100%;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .font-selector button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            background-color: #ffffff;
+            color: #007aff;
+            border: 1px solid #e0e0e0;
+        }
+
+        .font-selector button.active {
+            background-color: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+
+        .font-selector button:hover:not(.active) {
+            background-color: #f5f5f5;
+        }
+
+        /* 添加字体预览样式 */
+        .font-selector button[data-font="times"] {
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .font-selector button[data-font="arial"] {
+            font-family: Arial, sans-serif;
+        }
+
+        .font-selector button[data-font="brush"] {
+            font-family: "Brush Script MT", cursive;
+        }
+
+        /* --- Welcome Message Styling --- */
+        .welcome-message {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .welcome-message h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        .welcome-message p {
+            color: #34495e;
+            font-size: 16px;
+            line-height: 1.6;
+            font-family: Arial, sans-serif;
+        }
+
+        .welcome-message .highlight {
+            color: #007aff;
+            font-weight: 500;
+        }
+
+        /* --- Download Format Selector --- */
+        .download-format {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .download-format button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            background-color: #ffffff;
+            color: #007aff;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 0;
+        }
+
+        .download-format button.active {
+            background-color: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+
+        .download-format button:hover:not(.active) {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="welcome-message">
+            <h2>Welcome to Your Creative Space</h2>
+            <p>Transform your words into stunning posters with our <span class="highlight">Text Poster Generator</span>. Simply type your message and watch your vision come to life.</p>
+        </div>
+        <textarea id="text-input" placeholder="Enter your text here..."></textarea>
+        <button id="change-bg-button">Change Background</button>
+        <div id="tone-selector" class="segmented-control">
+            <button data-tone="warm">Warm</button>
+            <button data-tone="cool">Cool</button>
+            <button data-tone="any" class="active">Any</button>
+        </div>
+        <div class="font-selector">
+            <button data-font="times" class="active">Times New Roman</button>
+            <button data-font="arial">Arial</button>
+            <button data-font="brush">Brush Script</button>
+        </div>
+        <canvas id="poster-canvas" width="900" height="1600"></canvas>
+        <div class="download-format">
+            <button data-format="png" class="active">PNG (High Quality)</button>
+            <button data-format="jpeg">JPEG (Smaller Size)</button>
+        </div>
+        <button id="download-button">Download Poster ↓</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Get DOM Elements ---
+            const textInput = document.getElementById('text-input');
+            const changeBgButton = document.getElementById('change-bg-button');
+            const toneSelector = document.getElementById('tone-selector');
+            const toneButtons = toneSelector.querySelectorAll('button');
+            const canvas = document.getElementById('poster-canvas');
+            const downloadButton = document.getElementById('download-button');
+            const ctx = canvas.getContext('2d');
+
+            // --- State ---
+            let currentTone = 'any'; // Initial tone ('any', 'warm', 'cool')
+            let currentFont = 'times'; // 默认字体
+            let currentFormat = 'png'; // 默认下载格式
+            let lastRedrawTime = 0; // For debouncing
+
+            // --- Constants ---
+            const CANVAS_WIDTH = canvas.width;
+            const CANVAS_HEIGHT = canvas.height;
+            const MIN_FONT_SIZE = 40;
+            const MAX_FONT_SIZE = 120;
+            const DEBOUNCE_DELAY = 300; // ms
+            const MAX_TEXT_LENGTH = 100; // 最大字数限制
+            const CHARS_PER_LINE = 6; // 每行字数改为6
+
+            // 字体映射
+            const FONT_MAP = {
+                'times': '"Times New Roman", Times, serif',
+                'arial': 'Arial, sans-serif',
+                'brush': '"Brush Script MT", cursive'
+            };
+
+            // --- Helper Functions ---
+
+            /**
+             * Generates a random HSL color string.
+             * HSL is easier for controlling warmth/coolness.
+             * H: Hue (0-360), S: Saturation (0-100%), L: Lightness (0-100%)
+             */
+            function getRandomHSL(tone) {
+                let hue;
+                const saturation = Math.floor(Math.random() * 51) + 50; // 50-100% (avoid grayscale)
+                const lightness = Math.floor(Math.random() * 41) + 30;  // 30-70% (avoid pure white/black)
+
+                if (tone === 'warm') {
+                    // Reds, Oranges, Yellows (approx 0-60) + Pinks (approx 300-360)
+                    const isRedOrange = Math.random() > 0.5;
+                    hue = isRedOrange ? Math.random() * 60 : 300 + Math.random() * 60;
+                } else if (tone === 'cool') {
+                    // Greens, Blues, Purples (approx 120-300)
+                    hue = 120 + Math.random() * 180;
+                } else { // 'any' tone
+                    hue = Math.random() * 360;
+                }
+                return `hsl(${Math.floor(hue)}, ${saturation}%, ${lightness}%)`;
+            }
+
+            /**
+             * Draws a linear gradient background.
+             */
+            function drawGradientBackground(ctx, width, height, color1, color2) {
+                const angle = Math.random() * 360; // Random gradient angle
+                const x0 = width / 2 + Math.cos(angle * Math.PI / 180) * width / 2;
+                const y0 = height / 2 + Math.sin(angle * Math.PI / 180) * height / 2;
+                const x1 = width / 2 - Math.cos(angle * Math.PI / 180) * width / 2;
+                const y1 = height / 2 - Math.sin(angle * Math.PI / 180) * height / 2;
+
+                const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+                gradient.addColorStop(0, color1);
+                gradient.addColorStop(1, color2);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            /**
+             * Converts HSL color string to an RGB object {r, g, b}.
+             * Needed for accurate brightness calculation.
+             * (Simplified HSL to RGB conversion - assumes HSL format 'hsl(h, s%, l%)')
+             */
+            function hslToRgb(hsl) {
+                const match = hsl.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+                if (!match) return { r: 0, g: 0, b: 0 };
+                let h = parseInt(match[1]);
+                let s = parseInt(match[2]) / 100;
+                let l = parseInt(match[3]) / 100;
+
+                let c = (1 - Math.abs(2 * l - 1)) * s;
+                let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+                let m = l - c / 2;
+                let r = 0, g = 0, b = 0;
+
+                if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+                else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+                else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+                else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+                else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+                else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+
+                r = Math.round((r + m) * 255);
+                g = Math.round((g + m) * 255);
+                b = Math.round((b + m) * 255);
+                return { r, g, b };
+            }
+
+            /**
+             * Calculates perceived brightness of an RGB color (0-255).
+             * Using the luminance formula.
+             */
+            function getBrightness(rgb) {
+                return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b);
+            }
+
+            /**
+             * Determines text color (black or white) based on average background brightness.
+             * Threshold can be adjusted.
+             */
+            function getContrastColor(color1, color2) {
+                const rgb1 = hslToRgb(color1);
+                const rgb2 = hslToRgb(color2);
+                // Simple average brightness for gradient
+                const avgBrightness = (getBrightness(rgb1) + getBrightness(rgb2)) / 2;
+                // console.log("Avg Brightness:", avgBrightness);
+                return avgBrightness > 140 ? '#000000' : '#FFFFFF'; // Threshold 140 (adjust as needed)
+            }
+
+            /**
+             * 计算最佳字体大小
+             */
+            function calculateFontSize(text) {
+                const length = text.length;
+                if (length <= 10) return MAX_FONT_SIZE;
+                if (length <= 20) return 80;
+                if (length <= 40) return 60;
+                return MIN_FONT_SIZE;
+            }
+
+            /**
+             * 将文本分割成多行
+             */
+            function splitTextIntoLines(text) {
+                // 限制最大字数
+                text = text.substring(0, MAX_TEXT_LENGTH);
+                
+                const lines = [];
+                for (let i = 0; i < text.length; i += CHARS_PER_LINE) {
+                    lines.push(text.substring(i, i + CHARS_PER_LINE));
+                }
+                return lines;
+            }
+
+            /**
+             * 绘制带阴影的文本
+             */
+            function drawTextWithShadow(ctx, text, x, y, fontSize, fontFamily, textColor) {
+                // 使用选中的字体
+                const selectedFont = FONT_MAP[fontFamily] || fontFamily;
+                ctx.font = `bold ${fontSize}px ${selectedFont}`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // 添加阴影效果
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                
+                ctx.fillStyle = textColor;
+                
+                // 分割文本并绘制每一行
+                const lines = splitTextIntoLines(text);
+                const lineHeight = fontSize * 1.5; // 行间距
+                const totalHeight = lines.length * lineHeight;
+                const startY = y - (totalHeight / 2) + (lineHeight / 2);
+                
+                lines.forEach((line, index) => {
+                    const currentY = startY + (index * lineHeight);
+                    ctx.fillText(line, x, currentY);
+                });
+                
+                // 重置阴影
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+            }
+
+            // --- Main Drawing Function ---
+            function redrawCanvas() {
+                const now = Date.now();
+                if (now - lastRedrawTime < DEBOUNCE_DELAY) {
+                    return; // Debounce
+                }
+                lastRedrawTime = now;
+
+                let text = textInput.value.trim();
+                
+                // 如果文本为空，不显示任何内容
+                if (!text) {
+                    // 只绘制背景
+                    const color1 = getRandomHSL(currentTone);
+                    const color2 = getRandomHSL(currentTone);
+                    drawGradientBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, color1, color2);
+                    return;
+                }
+                
+                // 如果超过最大字数，截断并显示提示
+                if (text.length > MAX_TEXT_LENGTH) {
+                    text = text.substring(0, MAX_TEXT_LENGTH);
+                    console.log(`Maximum text length reached (${MAX_TEXT_LENGTH} characters)`);
+                }
+
+                // 1. Generate background
+                const color1 = getRandomHSL(currentTone);
+                const color2 = getRandomHSL(currentTone);
+                drawGradientBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, color1, color2);
+
+                // 2. Determine text color
+                const textColor = getContrastColor(color1, color2);
+
+                // 3. Draw text
+                const fontSize = calculateFontSize(text);
+                const x = CANVAS_WIDTH / 2;
+                const y = CANVAS_HEIGHT / 2;
+
+                drawTextWithShadow(ctx, text, x, y, fontSize, currentFont, textColor);
+            }
+
+            // --- Event Listeners ---
+            changeBgButton.addEventListener('click', redrawCanvas);
+
+            toneButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    toneButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentTone = button.dataset.tone;
+                    redrawCanvas();
+                });
+            });
+
+            // 添加字数限制的输入监听
+            let inputTimeout;
+            textInput.addEventListener('input', () => {
+                const text = textInput.value;
+                if (text.length > MAX_TEXT_LENGTH) {
+                    textInput.value = text.substring(0, MAX_TEXT_LENGTH);
+                }
+                clearTimeout(inputTimeout);
+                inputTimeout = setTimeout(redrawCanvas, DEBOUNCE_DELAY);
+            });
+
+            // 添加下载格式选择器事件监听
+            const formatButtons = document.querySelectorAll('.download-format button');
+            formatButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    formatButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentFormat = button.dataset.format;
+                });
+            });
+
+            // 修改下载按钮事件监听
+            downloadButton.addEventListener('click', () => {
+                const mimeType = currentFormat === 'png' ? 'image/png' : 'image/jpeg';
+                const quality = currentFormat === 'jpeg' ? 0.9 : undefined; // JPEG质量设置
+                
+                const dataURL = canvas.toDataURL(mimeType, quality);
+                const link = document.createElement('a');
+                link.href = dataURL;
+                
+                const filenameBase = textInput.value.trim().substring(0, 20).replace(/\s+/g, '_') || 'Poster';
+                link.download = `${filenameBase}.${currentFormat}`;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // 添加字体选择器事件监听
+            const fontButtons = document.querySelectorAll('.font-selector button');
+            fontButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    fontButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentFont = button.dataset.font;
+                    redrawCanvas();
+                });
+            });
+
+            // --- Initial Draw ---
+            redrawCanvas();
+        });
+    </script>
+</body>
+</html>
